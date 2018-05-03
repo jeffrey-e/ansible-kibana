@@ -1,0 +1,48 @@
+---
+
+- name: set fact force_install to no
+  set_fact: force_install=no
+
+- name: set fact force_install to yes
+  set_fact: force_install=yes
+  when: kb_allow_downgrades
+
+- name: Debian - Install apt-transport-https to support https APT downloads
+  become: yes
+  apt: name=apt-transport-https state=present
+  when: kb_use_repository
+
+- name: Debian - Add Elasticsearch repository key
+  become: yes
+  apt_key: url="{{ kb_apt_key }}" state=present
+  when: kb_use_repository and kb_apt_key
+
+- name: Debian - Add kibana repository
+  become: yes
+  apt_repository: repo={{ item.repo }} state={{ item.state}}
+  with_items:
+    - { repo: "{{ kb_apt_url_old }}", state: "absent" }
+    - { repo: "{{ kb_apt_url }}", state: "present" }
+  when: kb_use_repository
+
+- name: Debian - Ensure kibana is installed
+  become: yes
+  apt: name=kibana{% if kb_version is defined and kb_version != "" %}={{ kb_version }}{% endif %} state=present force={{force_install}} allow_unauthenticated={{ 'no' if kb_apt_key else 'yes' }} cache_valid_time=86400
+  when: kb_use_repository
+  register: debian_kibana_install_from_repo
+  notify: restart kibana
+
+- name: Debian - Include versionlock
+  include: kibana-Debian-version-lock.yml
+  when: kb_version_lock
+
+- name: Debian - Download kibana from url
+  get_url: url={% if kb_custom_package_url is defined %}{{ kb_custom_package_url }}{% else %}{{ kb_package_url }}-{{ kb_version }}.deb{% endif %} dest=/tmp/kibana-{{ kb_version }}.deb validate_certs=no
+  when: not kb_use_repository
+
+- name: Debian - Ensure kibana is installed from downloaded package
+  become: yes
+  apt: deb=/tmp/kibana-{{ kb_version }}.deb
+  when: not kb_use_repository
+  register: kibana_install_from_package
+  notify: restart kibana

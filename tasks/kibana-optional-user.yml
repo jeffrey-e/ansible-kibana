@@ -1,0 +1,24 @@
+---
+#Add the kibana user before installing from packages.
+- name: Ensure optional kibana group is created with the correct id.
+  become: yes
+  #Restart if these change
+  notify: restart kibana
+  group:
+    state: present
+    name: "{{ kb_group }}"
+    system: yes
+    gid: "{{ kb_group_id }}"
+
+- name: Ensure optional kibana user is created with the correct id.
+  become: yes
+  #Restart if these change
+  notify: restart kibana
+  user:
+    state: present
+    name: "{{ kb_user }}"
+    comment: kibana system user
+    system: yes
+    createhome: no
+    uid: "{{ kb_user_id }}"
+    group: "{{ kb_group }}"

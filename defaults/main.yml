@@ -1,0 +1,49 @@
+---
+kb_major_version: "6.x"
+kb_version: "6.2.3"
+kb_version_lock: false
+kb_use_repository: true
+kb_templatkb_fileglob: "files/templates/*.json"
+kb_apt_key: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+kb_apt_url: "deb https://artifacts.elastic.co/packages/{{ kb_major_version }}/apt stable main"
+kb_apt_url_old: "deb http://packages.elastic.co/elasticsearch/{{ kb_major_version }}/debian stable main"
+kb_start_service: true
+kb_java_install: true
+update_java: false
+kb_restart_on_change: true
+kb_plugins_reinstall: false
+kb_scripts: false
+kb_templates: false
+kb_user: kibana
+kb_group: kibana
+kb_config: {}
+kb_config_log4j2: log4j2.properties.j2
+#Need to provide default directories
+kb_pid_dir: "/var/run/kibana"
+kb_conf_dir: "/etc/kibana"
+kb_data_dirs: "/var/lib/kibana"
+kb_log_dir: "/var/log/kibana"
+kb_server_host: "localhost"
+kb_server_name: "localhost"
+kb_server_port: 5601
+kb_ssl_enabled: false
+#kb_max_open_files: 65536
+#kb_max_threads: "{{ 2048 if ( kb_version | version_compare('6.0.0', '<')) else 8192 }}"
+#kb_max_map_count: 262144
+kb_allow_downgrades: false
+kb_enable_xpack: false
+
+#These are used for internal operations performed by ansible.
+#They do not affect the current configuration
+kb_es_url: "https://localhost:9200"
+kb_es_user: "kibana"
+kb_debian_startup_timeout: 10
+
+# Since ansible 2.2 the following variables need to be defined
+# to allow the role to be conditionally played with a when condition.
+pid_dir: ''
+log_dir: ''
+conf_dir: ''
+data_dirs: ''
+# JVM custom parameters
+kb_jvm_custom_parameters: ''

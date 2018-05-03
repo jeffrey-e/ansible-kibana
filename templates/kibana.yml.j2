@@ -1,0 +1,67 @@
+
+{% if kb_config %}
+{{ kb_config | to_nice_yaml }}
+{% endif %}
+
+{% if kb_ssl_config['enabled'] is defined %}
+server.ssl.enabled: true
+server.ssl.key: {{conf_dir}}/ssl/{{kb_ssl_config['dns']}}.key
+server.ssl.certificate: {{conf_dir}}/ssl/{{kb_ssl_config['dns']}}.crt
+server.ssl.certificateAuthorities: [ "{{conf_dir}}/ssl/{{kb_ssl_config['dns']}}.crt" ]
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

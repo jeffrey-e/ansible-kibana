@@ -1,0 +1,18 @@
+---
+
+- name: set fact kb_version_changed
+  set_fact: kb_version_changed={{ ((kibana_install_from_package is defined and (debian_kibana_install_from_repo.changed or redhat_kibana_install_from_repo.changed)) or (kibana_install_from_package is defined and kibana_install_from_package.changed)) }}
+
+- name: include kibana-xpack-install.yml
+  include: kibana-xpack-install.yml
+
+#Add any feature specific configuration here
+- name: Set Plugin Directory Permissions
+  become: yes
+  file: state=directory path={{ kb_home }}/plugins owner={{ kb_user }} group={{ kb_group }} recurse=yes
+
+#Make sure kibana.keystore has correct Permissions
+# - name: Set kibana.keystore Permissions
+#   become: yes
+#   file: state=file path=/var/lib/kibana/kibana.keystore owner={{ kb_user }} group={{ kb_group }}
+#   when: kb_enable_xpack and (kb_version | version_compare('6.0.0', '>'))

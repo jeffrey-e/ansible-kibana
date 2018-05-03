@@ -1,0 +1,14 @@
+
+- name: reload systemd configuration
+  become: yes
+  command: systemctl daemon-reload
+
+# Restart service and ensure it is enabled
+
+- name: restart kibana
+  become: yes
+  service: name=kibana state=restarted enabled=yes
+  when:
+    - kb_restart_on_change
+    - kb_start_service
+  register: kb_restarted

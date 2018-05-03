@@ -1,0 +1,155 @@
+---
+
+#Test if feature is installed
+- name: Test if x-pack is installed
+  shell: "{{kb_home}}/bin/kibana-plugin list | grep x-pack"
+  become: yes
+  register: x_pack_installed
+  changed_when: False
+  failed_when: "'ERROR' in x_pack_installed.stdout"
+  check_mode: no
+  ignore_errors: yes
+  environment:
+    CONF_DIR: "{{ conf_dir }}"
+    ES_PATH_CONF: "{{ conf_dir }}"
+    ES_INCLUDE: "{{ instance_default_file }}"
+
+
+#Remove X-Pack if installed and its not been requested or the KB version has changed
+- name: Remove x-pack plugin
+  become: yes
+  command: "{{kb_home}}/bin/kibana-plugin remove x-pack"
+  register: xpack_state
+  failed_when: "'ERROR' in xpack_state.stdout"
+  changed_when: xpack_state.rc == 0
+  when: x_pack_installed.rc == 0 and (not kb_enable_xpack or kb_version_changed)
+  notify: restart kibana
+  environment:
+    CONF_DIR: "{{ conf_dir }}"
+    ES_PATH_CONF: "{{ conf_dir }}"
+    ES_INCLUDE: "{{ instance_default_file }}"
+
+
+#Install plugin if not installed, or the kb version has changed (so removed above), and its been requested
+- name: Download x-pack from url
+  get_url: url={{ kb_xpack_custom_url }} dest=/tmp/x-pack-{{ kb_version }}.zip
+  when: (x_pack_installed.rc == 1 or kb_version_changed) and (kb_enable_xpack and kb_xpack_custom_url is defined)
+
+- name: Install x-pack plugin from local
+  become: yes
+  command: >
+    {{kb_home}}/bin/kibana-plugin install --silent --batch file:///tmp/x-pack-{{ kb_version }}.zip
+  register: xpack_state
+  changed_when: xpack_state.rc == 0
+  when: (x_pack_installed.rc == 1 or kb_version_changed) and (kb_enable_xpack and kb_xpack_custom_url is defined)
+  notify: restart kibana
+  environment:
+    CONF_DIR: "{{ conf_dir }}"
+    ES_PATH_CONF: "{{ conf_dir }}"
+    ES_INCLUDE: "{{ instance_default_file }}"
+
+- name: Delete x-pack zip file
+  file: dest=/tmp/x-pack-{{ kb_version }}.zip state=absent
+  when: kb_xpack_custom_url is defined
+
+- name: Install x-pack plugin from elastic.co
+  become: yes
+  command: >
+    {{kb_home}}/bin/kibana-plugin install --silent --batch x-pack
+  register: xpack_state
+  failed_when: "'ERROR' in xpack_state.stdout"
+  changed_when: xpack_state.rc == 0
+  when: (x_pack_installed.rc == 1 or kb_version_changed) and (kb_enable_xpack and kb_xpack_custom_url is not defined)
+  notify: restart kibana
+  environment:
+    CONF_DIR: "{{ conf_dir }}"
+    ES_PATH_CONF: "{{ conf_dir }}"
+    ES_INCLUDE: "{{ instance_default_file }}"
+    ES_JAVA_OPTS: "{% if kb_proxy_host is defined and kb_proxy_host != '' %}-Dhttp.proxyHost={{ kb_proxy_host }} -Dhttp.proxyPort={{ kb_proxy_port }} -Dhttps.proxyHost={{ kb_proxy_host }} -Dhttps.proxyPort={{ kb_proxy_port }}{% endif %}"
+
+#Check if internal ssl key is already present
+- name: Verify if Kibana Cert keys are present
+  stat:
+    path: "{{kb_conf_dir}}/ssl/{{ kb_ssl_config['dns'] }}.key"
+  become: true
+  become_user: kibana
+  register: kb_ssl_cert_present
+
+# - name: Copy certificates to Kibana
+#   become: yes
+#   become_user: kibana
+#   copy: 
+#     src: "/tmp/certs/kb-{{ kb_ssl_config['dns'] }}.zip" 
+#     dest: "{{kb_conf_dir}}/"
+#     owner: "{{ kb_user }}"
+#     group: "{{ kb_group }}"
+
+- name: Unarchive certificates for Kibana
+  # command: unzip {{kb_conf_dir}}/kb-{{ kb_ssl_config['dns'] }}.zip
+  unarchive: 
+    copy: true
+    src: "/tmp/certs/kb-{{ kb_ssl_config['dns'] }}.zip" 
+    dest: "{{kb_conf_dir}}"
+  become: true
+  when: not kb_ssl_cert_present.stat.exists or es_ssl_regen_cert is defined
+  register: kb_ssl_extracted_certs # << not working?
+
+#When rekey is enabled remove ssl folder << Test rekey!
+
+- name: Move certificates to ssl folder
+  become: yes
+  command: "mv {{kb_conf_dir}}/{{kb_ssl_config['dns']}} {{kb_conf_dir}}/ssl"
+  when: kb_ssl_extracted_certs.changed
+
+- name: Delete temporary extraction location
+  become: yes
+  file: 
+    dest: "{{kb_conf_dir}}/{{kb_ssl_config['dns']}}"
+    state: absent
+  when: kb_ssl_extracted_certs.changed
+
+- name: Copy CA certificate to ssl folder
+  become: yes
+  copy: 
+    src: "/tmp/certs/elastic-ca.crt" 
+    dest: "{{kb_conf_dir}}/ssl/"
+  when: kb_ssl_extracted_certs.changed
+
+# - name: Generate SSL/TLS certificate for Kibana (required for platinum license)
+#   environment: 
+#     - ES_PATH_CONF: "{{es_conf_dir}}"
+#   command: /usr/share/elasticsearch/bin/x-pack/certutil cert --silent --ca /etc/ssl/elasticsearch/elastic-ca.p12 --ca-pass "test" --ip {{ kb_ssl_config['ip'] }} --dns {{ kb_ssl_config['dns'] }},localhost --out {{conf_dir}}/ssl/{{ kb_ssl_config['dns'] }}.p12 --pass "test"
+#   become: true
+#   register: kibana_cert
+#   when: kb_ssl_regen_cert is defined or not kb_ssl_cert_present.stat.exists
+
+# - name: Verify if Kibana keystore is present
+#   stat:
+#     path: "/var/lib/kibana/kibana.keystore"
+#   become: true
+#   become_user: kibana
+#   register: kb_keystore_present
+
+# - name: Create KB keystore (required for platinum license)
+#   environment: 
+#     - KB_PATH_CONF: "{{conf_dir}}"
+#   shell: /usr/share/kibana/bin/kibana-keystore create --silent
+#   become: true
+#   become_user: kibana
+#   when: kb_keystore_present
+
+# - name: Add SSL/TLS keystore password to KB keystore (required for platinum license)
+#   environment: 
+#     - KB_PATH_CONF: "{{conf_dir}}"
+#   shell: echo "test" | /usr/share/kibana/bin/kibana-keystore add --silent server.ssl.keystore.secure_password -x --force
+#   become: true
+#   become_user: kibana
+#   when: kibana_cert
+
+# - name: Add SSL/TLS truststore password to KB keystore (required for platinum license)
+#   environment: 
+#     - KB_PATH_CONF: "{{conf_dir}}"
+#   shell: echo "test" | /usr/share/kibana/bin/kibana-keystore add --silent server.ssl.truststore.secure_password -x --force
+#   become: true
+#   become_user: kibana
+#   when: kibana_cert
