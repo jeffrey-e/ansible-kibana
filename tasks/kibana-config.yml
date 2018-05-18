@@ -74,3 +74,13 @@
 # - name: Delete Default JVM Options File
 #   become: yes
 #   file: dest=/etc/kibana/jvm.options state=absent
+
+- name: Create empty log file
+  become: yes
+  file:
+    path: "{{ kb_log_file }}"
+    state: touch
+    owner: kibana
+    group: kibana
+    mode: 0644
+  register: kb_log_folder

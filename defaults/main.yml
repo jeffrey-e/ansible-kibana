@@ -22,7 +22,7 @@ kb_config_log4j2: log4j2.properties.j2
 kb_pid_dir: "/var/run/kibana"
 kb_conf_dir: "/etc/kibana"
 kb_data_dirs: "/var/lib/kibana"
-kb_log_dir: "/var/log/kibana"
+kb_log_file: "/var/log/kibana.log"
 kb_server_host: "localhost"
 kb_server_name: "localhost"
 kb_server_port: 5601

@@ -47,5 +47,5 @@
   meta: flush_handlers
 
 - name: Make sure kibana is started
-  service: name=kibana state=started enabled=yes
+  service: name=kibana state=restarted enabled=yes
   when: kb_start_service
