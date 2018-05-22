@@ -3,13 +3,12 @@
   stat:
     path: "{{kb_conf_dir}}/ssl-internal/{{ kb_es_ssl_config['dns'] }}.key"
   become: true
-  become_user: kibana
   register: kb_ssl_cert_present
   when: kb_es_ssl_config is defined
 
 #error hier
 - name: Delete SSL folder
-  become: yes
+  become: true
   file: 
     dest: "{{kb_conf_dir}}/ssl-internal"
     state: absent
@@ -21,6 +20,7 @@
     copy: true
     src: "/tmp/certs/kb-{{ kb_es_ssl_config['dns'] }}.zip" 
     dest: "{{kb_conf_dir}}"
+    owner: kibana
   become: true
   when: kb_es_ssl_config is defined and (not kb_ssl_cert_present.stat.exists or kb_es_ssl_config['regen_certs'])
   register: kb_es_ssl_extracted_certs # << not working?
@@ -28,12 +28,12 @@
 #When rekey is enabled remove ssl folder << Test rekey!
 
 - name: Move certificates to ssl folder
-  become: yes
+  become: true
   command: "mv {{kb_conf_dir}}/{{kb_es_ssl_config['dns']}} {{kb_conf_dir}}/ssl-internal"
   when: kb_es_ssl_extracted_certs.changed
 
 - name: Delete temporary extraction location
-  become: yes
+  become: true
   file: 
     dest: "{{kb_conf_dir}}/{{kb_es_ssl_config['dns']}}"
     state: absent
@@ -43,12 +43,11 @@
   stat:
     path: "{{kb_conf_dir}}/ssl/elastic-ca.crt"
   become: true
-  become_user: kibana
   register: kb_es_ssl_ca_cert_present
   when: kb_es_ssl_config is defined
 
 - name: Copy CA certificate to ssl folder
-  become: yes
+  become: true
   copy: 
     src: "/tmp/certs/elastic-ca.crt" 
     dest: "{{kb_conf_dir}}/ssl-internal/"
@@ -60,7 +59,6 @@
   stat:
     path: "{{kb_conf_dir}}/ssl/{{ kb_ssl_config['dns'] }}.crt"
   become: true
-  become_user: kibana
   register: kb_fe_ssl_cert_present
   when: kb_ssl_config is defined
 
@@ -68,12 +66,11 @@
   stat:
     path: "{{kb_conf_dir}}/ssl/{{ kb_ssl_config['dns'] }}.key"
   become: true
-  become_user: kibana
   register: kb_fe_ssl_key_present
   when: kb_ssl_config is defined
 
 - name: Delete SSL folder
-  become: yes
+  become: true
   file: 
     dest: "{{kb_conf_dir}}/ssl"
     state: absent
@@ -105,12 +102,11 @@
   stat:
     path: "{{kb_conf_dir}}/ssl/elastic-ca.crt"
   become: true
-  become_user: kibana
   register: kb_ssl_ca_cert_present
   when: kb_ssl_config is defined
 
 - name: Copy CA certificate to ssl folder
-  become: yes
+  become: true
   copy:
     src: "{{kb_ssl_config['cert']}}"
     dest: "{{kb_conf_dir}}/ssl/{{ inventory_hostname }}.cacerts"

@@ -1,7 +1,7 @@
 ---
 #Add the kibana user before installing from packages.
 - name: Ensure optional kibana group is created with the correct id.
-  become: yes
+  become: true
   #Restart if these change
   notify: restart kibana
   group:
@@ -11,7 +11,7 @@
     gid: "{{ kb_group_id }}"
 
 - name: Ensure optional kibana user is created with the correct id.
-  become: yes
+  become: true
   #Restart if these change
   notify: restart kibana
   user:

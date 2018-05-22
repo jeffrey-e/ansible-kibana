@@ -15,7 +15,7 @@
 
 #List currently installed plugins. We have to list the directories as the list commmand fails if the KB version is different than the plugin version.
 - name: Check installed kibana plugins
-  become: yes
+  become: true
   shell: "ls {{kb_home}}/plugins {{list_command}}"
   register: installed_plugins
   changed_when: False
@@ -47,7 +47,7 @@
 
 # This removes any currently installed plugins (to prevent errors when reinstalling)
 - name: Remove kibana plugins
-  become: yes
+  become: true
   command: "{{kb_home}}/bin/kibana-plugin remove {{item}} --silent"
   ignore_errors: yes
   with_items: "{{ plugins_to_remove | default([]) }}"
@@ -59,7 +59,7 @@
     # KB_INCLUDE: "{{ instance_default_file }}"
 
 - name: Install kibana plugins
-  become: yes
+  become: true
   command: "{{kb_home}}/bin/kibana-plugin install {{ item.plugin }} --batch --silent"
   register: plugin_installed
   failed_when: "'ERROR' in plugin_installed.stdout"
@@ -78,5 +78,5 @@
 
 #Set permissions on plugins directory
 - name: Set Plugin Directory Permissions
-  become: yes
+  become: true
   file: state=directory path={{ kb_home }}/plugins owner={{ kb_user }} group={{ kb_group }} recurse=yes

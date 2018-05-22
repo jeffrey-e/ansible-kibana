@@ -1,10 +1,10 @@
 ---
 - name: Debian - hold kibana version
-  become: yes
+  become: true
   command: apt-mark hold kibana
   register: hold_kibana_result
   changed_when: "hold_kibana_result.stdout != 'kibana was already set on hold.'"
 - name: Debian - hold kibana version with aptitude
-  become: yes
+  become: true
   command: aptitude hold kibana
   register: aptitude_hold_kibana_result
