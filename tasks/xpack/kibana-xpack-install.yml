@@ -3,7 +3,7 @@
 #Test if feature is installed
 - name: Test if x-pack is installed
   shell: "{{kb_home}}/bin/kibana-plugin list | grep x-pack"
-  become: true
+  become: yes
   register: x_pack_installed
   changed_when: False
   failed_when: "'ERROR' in x_pack_installed.stdout"
@@ -17,7 +17,7 @@
 
 #Remove X-Pack if installed and its not been requested or the KB version has changed
 - name: Remove x-pack plugin
-  become: true
+  become: yes
   command: "{{kb_home}}/bin/kibana-plugin remove x-pack"
   register: xpack_state
   failed_when: "'ERROR' in xpack_state.stdout"
@@ -36,7 +36,7 @@
   when: (x_pack_installed.rc == 1 or kb_version_changed) and (kb_enable_xpack and kb_xpack_custom_url is defined)
 
 - name: Install x-pack plugin from local
-  become: true
+  become: yes
   command: >
     {{kb_home}}/bin/kibana-plugin install --silent file:///tmp/x-pack-{{ kb_version }}.zip
   register: xpack_state
@@ -53,7 +53,7 @@
   when: kb_xpack_custom_url is defined
 
 - name: Install x-pack plugin from elastic.co
-  become: true
+  become: yes
   command: >
     {{kb_home}}/bin/kibana-plugin install --silent x-pack
   register: xpack_state

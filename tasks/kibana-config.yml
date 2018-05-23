@@ -3,7 +3,7 @@
 
 #Create required directories
 # - name: Create Directories
-#   become: true
+#   become: yes
 #   file: path={{ item }} state=directory owner={{ kb_user }} group={{ kb_group }}
 #   with_items:
 #     - "{{pid_dir}}"
@@ -12,21 +12,21 @@
 
 #Copy the config template
 - name: Copy Configuration File
-  become: true
+  become: yes
   template: src=kibana.yml.j2 dest={{conf_dir}}/kibana.yml owner={{ kb_user }} group={{ kb_group }} mode=0644 force=yes
   register: system_change
   notify: restart kibana
 
 #Copy the instance specific init file
 # - name: Copy Debian Init File for Instance
-#   become: true
+#   become: yes
 #   template: src=init/debian/kibana.j2 dest={{instance_init_script}} mode=0755 force=yes
 #   when: ansible_os_family == 'Debian' and not use_system_d
 #   notify: restart kibana
 
 #Copy the systemd specific file if systemd is installed
 # - name: Copy Systemd File for Instance
-#   become: true
+#   become: yes
 #   template: src=systemd/kibana.j2 dest={{instance_sysd_script}} mode=0644 force=yes
 #   when: use_system_d
 #   notify:
@@ -36,11 +36,11 @@
 #Clean up un-wanted package scripts to avoid confusion
 
 # - name: Delete Default Init
-#   become: true
+#   become: yes
 #   file: dest=/etc/init.d/kibana state=absent
 
 - name: Create empty default environment file
-  become: true
+  become: yes
   changed_when: False
   copy:
     dest: /etc/default/kibana
@@ -48,7 +48,7 @@
   when: ansible_os_family == 'Debian'
 
 - name: Create empty default environment file
-  become: true
+  become: yes
   changed_when: False
   copy:
     dest: /etc/sysconfig/kibana
@@ -56,27 +56,27 @@
   when: ansible_os_family == 'RedHat'
 
 # - name: Delete Default Sysconfig File
-#   become: true
+#   become: yes
 #   file: dest="{{ sysd_script }}" state=absent
 
 # - name: Delete Default Configuration File
-#   become: true
+#   become: yes
 #   file: dest=/etc/kibana/kibana.yml state=absent
 
 # - name: Delete Default Logging File
-#   become: true
+#   become: yes
 #   file: dest=/etc/kibana/logging.yml state=absent
 
 # - name: Delete Default Logging File
-#   become: true
+#   become: yes
 #   file: dest=/etc/kibana/log4j2.properties state=absent
 
 # - name: Delete Default JVM Options File
-#   become: true
+#   become: yes
 #   file: dest=/etc/kibana/jvm.options state=absent
 
 - name: Create empty log file
-  become: true
+  become: yes
   file:
     path: "{{ kb_log_file }}"
     state: touch
