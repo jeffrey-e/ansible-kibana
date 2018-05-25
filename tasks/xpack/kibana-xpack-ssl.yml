@@ -18,7 +18,7 @@
   # command: unzip {{kb_conf_dir}}/kb-{{ kb_es_ssl_config['dns'] }}.zip
   unarchive: 
     copy: true
-    src: "/tmp/certs/kb-{{ kb_es_ssl_config['dns'] }}.zip" 
+    src: "/tmp/as_ansible/certs/kb-{{ kb_es_ssl_config['dns'] }}.zip" 
     dest: "{{kb_conf_dir}}"
     owner: kibana
   become: yes
@@ -49,7 +49,7 @@
 - name: Copy CA certificate to ssl folder
   become: yes
   copy: 
-    src: "/tmp/certs/elastic-ca.crt" 
+    src: "/tmp/as_ansible/certs/elastic-ca.crt" 
     dest: "{{kb_conf_dir}}/ssl-internal/"
   when: not kb_es_ssl_ca_cert_present.stat.exists
 
