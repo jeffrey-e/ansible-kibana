@@ -28,7 +28,7 @@ kb_server_name: "localhost"
 kb_server_port: 5601
 kb_ssl_enabled: false
 #kb_max_open_files: 65536
-#kb_max_threads: "{{ 2048 if ( kb_version | version_compare('6.0.0', '<')) else 8192 }}"
+#kb_max_threads: "{{ 2048 if ( kb_version is version_compare('6.0.0', '<')) else 8192 }}"
 #kb_max_map_count: 262144
 kb_allow_downgrades: false
 kb_enable_xpack: false

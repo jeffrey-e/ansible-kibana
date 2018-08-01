@@ -32,6 +32,24 @@
   command: "mv {{kb_conf_dir}}/{{kb_es_ssl_config['dns']}} {{kb_conf_dir}}/ssl-internal"
   when: kb_es_ssl_extracted_certs.changed
 
+- name: Check if the kibana key has correct permissions
+  file:
+    path: "{{kb_conf_dir}}/ssl-internal/{{ kb_es_ssl_config['dns'] }}.key"
+    state: file
+    owner: kibana
+    group: kibana
+    mode: 0600
+  become: yes
+
+- name: Check if the kibana key has correct permissions
+  file:
+    path: "{{kb_conf_dir}}/ssl-internal/{{ kb_es_ssl_config['dns'] }}.crt"
+    state: file
+    owner: kibana
+    group: kibana
+    mode: 0644
+  become: yes
+
 - name: Delete temporary extraction location
   become: yes
   file: 

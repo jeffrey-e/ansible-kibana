@@ -15,4 +15,4 @@
 # - name: Set kibana.keystore Permissions
 #   become: yes
 #   file: state=file path=/var/lib/kibana/kibana.keystore owner={{ kb_user }} group={{ kb_group }}
-#   when: kb_enable_xpack and (kb_version | version_compare('6.0.0', '>'))
+#   when: kb_enable_xpack and (kb_version is version_compare('6.0.0', '>'))

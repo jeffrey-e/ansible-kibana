@@ -1,0 +1,10 @@
+---
+- name: Debian - unhold kibana version
+  become: yes
+  command: apt-mark unhold kibana
+  register: unhold_kibana_result
+  changed_when: "unhold_kibana_result.stdout != 'kibana was already not hold.'"
+- name: Debian - unhold kibana version with aptitude
+  become: yes
+  command: aptitude unhold kibana
+  register: aptitude_unhold_kibana_result

@@ -25,6 +25,10 @@
     - { repo: "{{ kb_apt_url }}", state: "present" }
   when: kb_use_repository
 
+- name: Debian - Remove version lock when upgrading
+  include: kibana-Debian-version-unlock.yml
+  when: kb_upgrade
+
 - name: Debian - Ensure kibana is installed
   become: yes
   apt: name=kibana{% if kb_version is defined and kb_version != "" %}={{ kb_version }}{% endif %} state=present force={{force_install}} allow_unauthenticated={{ 'no' if kb_apt_key else 'yes' }} cache_valid_time=86400
