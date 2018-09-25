@@ -94,12 +94,19 @@
     state: absent
   when: kb_ssl_config is defined and kb_ssl_config['regen_certs']
 
+- name: Create SSL folder
+  become: yes
+  file: 
+    dest: "{{kb_conf_dir}}/ssl"
+    state: directory
+
 - name: Copy certificate for Kibana frontend
   copy:
     src: "{{kb_ssl_config['cert']}}"
     dest: "{{kb_conf_dir}}/ssl/"
     owner: kibana
     mode: 0644
+    remote_src: true
   become: yes
   when: kb_ssl_config is defined and (not kb_fe_ssl_cert_present.stat.exists or kb_ssl_config['regen_certs'])
   register: kb_ssl_cert_copied
@@ -110,6 +117,7 @@
     dest: "{{kb_conf_dir}}/ssl/"
     owner: kibana
     mode: 0600
+    remote_src: true
   become: yes
   when: kb_ssl_config is defined and (not kb_fe_ssl_key_present.stat.exists or kb_ssl_config['regen_certs'])
   register: kb_ssl_key_copied
@@ -130,4 +138,5 @@
     dest: "{{kb_conf_dir}}/ssl/{{ inventory_hostname }}.cacerts"
     owner: kibana
     mode: 0644
+    remote_src: true
   when: not kb_ssl_ca_cert_present.stat.exists
