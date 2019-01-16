@@ -13,13 +13,10 @@ elasticsearch.ssl.certificateAuthorities: [ "{{conf_dir}}/ssl-internal/elastic-c
 server.ssl.enabled: true
 server.ssl.certificate: {{conf_dir}}/ssl/{{kb_ssl_config['dns']}}.crt
 server.ssl.key: {{conf_dir}}/ssl/{{kb_ssl_config['dns']}}.key
+{% if not kb_ssl_config['conjur_enabled'] %}
 server.ssl.certificateAuthorities: [ "{{conf_dir}}/ssl/{{kb_ssl_config['dns']}}.cacerts" ]
 {% endif %}
-
-
-
-
-
+{% endif %}
 
 
 

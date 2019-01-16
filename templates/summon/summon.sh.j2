@@ -1,0 +1,9 @@
+#!/bin/bash
+DIRECTORY="{{kb_conf_dir}}/ssl/"
+if [ ! -d "$DIRECTORY" ]
+then
+    mkdir -p $DIRECTORY
+fi
+
+echo $KIBANA_PRIV_KEY | sed 's/\\n/\'$'\n''/g' > $DIRECTORY/{{ kb_ssl_config['dns'] }}.key
+echo $KIBANA_PUB_CRT | sed 's/\\n/\'$'\n''/g' > $DIRECTORY/{{ kb_ssl_config['dns'] }}.crt

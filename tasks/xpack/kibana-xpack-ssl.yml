@@ -22,7 +22,7 @@
     dest: "{{kb_conf_dir}}"
     owner: kibana
   become: yes
-  when: kb_es_ssl_config is defined and (not kb_ssl_cert_present.stat.exists or kb_es_ssl_config['regen_certs'])
+  when: kb_es_ssl_config is defined and (not kb_ssl_cert_present.stat.exists or kb_es_ssl_config['regen_certs']) and not kb_ssl_config['conjur_enabled']
   register: kb_es_ssl_extracted_certs # << not working?
 
 #When rekey is enabled remove ssl folder << Test rekey!
@@ -100,6 +100,31 @@
     dest: "{{kb_conf_dir}}/ssl"
     state: directory
 
+- name: Place kibana summon script
+  become: true
+  template: 
+    src: summon/summon.sh.j2
+    dest: "{{kb_conf_dir}}/ssl/summon.sh"
+    mode: 600
+    owner: root
+    group: root
+  when: kb_ssl_config['conjur_enabled']
+
+- name: Place kibana secrets file
+  become: true
+  template: 
+    src: summon/secrets.yml.j2
+    dest: "{{kb_conf_dir}}/ssl/secrets.yml"
+    mode: 600
+    owner: root
+    group: root
+  when: kb_ssl_config['conjur_enabled']
+
+- name: Summon certificates
+  command: /usr/local/bin/summon --provider summon-conjur -f {{kb_conf_dir}}/ssl/secrets.yml  -D env=letsencrypt {{kb_conf_dir}}/ssl/summon.sh
+  become: true
+  when: kb_ssl_config['conjur_enabled']
+
 - name: Copy certificate for Kibana frontend
   copy:
     src: "{{kb_ssl_config['cert']}}"
@@ -108,8 +133,7 @@
     mode: 0644
     remote_src: true
   become: yes
-  when: kb_ssl_config is defined and (not kb_fe_ssl_cert_present.stat.exists or kb_ssl_config['regen_certs'])
-  register: kb_ssl_cert_copied
+  when: kb_ssl_config is defined and (not kb_fe_ssl_cert_present.stat.exists or kb_ssl_config['regen_certs']) and not kb_ssl_config['conjur_enabled']
 
 - name: Copy certificate key for Kibana frontend
   copy:
@@ -119,14 +143,11 @@
     mode: 0600
     remote_src: true
   become: yes
-  when: kb_ssl_config is defined and (not kb_fe_ssl_key_present.stat.exists or kb_ssl_config['regen_certs'])
-  register: kb_ssl_key_copied
-
-#When rekey is enabled remove ssl folder << Test rekey!
+  when: kb_ssl_config is defined and (not kb_fe_ssl_key_present.stat.exists or kb_ssl_config['regen_certs']) and not kb_ssl_config['conjur_enabled']
 
 - name: Verify if Kibana CA cert is present
   stat:
-    path: "{{kb_conf_dir}}/ssl/elastic-ca.crt"
+    path: "{{kb_conf_dir}}/ssl/{{ inventory_hostname }}.cacerts"
   become: yes
   register: kb_ssl_ca_cert_present
   when: kb_ssl_config is defined
@@ -139,4 +160,4 @@
     owner: kibana
     mode: 0644
     remote_src: true
-  when: not kb_ssl_ca_cert_present.stat.exists
+  when: not kb_ssl_ca_cert_present.stat.exists and not kb_ssl_config['conjur_enabled']
