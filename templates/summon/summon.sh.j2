@@ -5,5 +5,5 @@ then
     mkdir -p $DIRECTORY
 fi
 
-echo $KIBANA_PRIV_KEY | sed 's/\\n/\'$'\n''/g' > $DIRECTORY/{{ kb_ssl_config['dns'] }}.key && chmod 600 $DIRECTORY/{{ kb_ssl_config['dns'] }}.key
-echo $KIBANA_PUB_CRT | sed 's/\\n/\'$'\n''/g' > $DIRECTORY/{{ kb_ssl_config['dns'] }}.crt && chmod 644 $DIRECTORY/{{ kb_ssl_config['dns'] }}.crt
+echo $KIBANA_PRIV_KEY | sed 's/\\n/\'$'\n''/g' > $DIRECTORY/{{ kb_ssl_config['dns'] }}.key && chmod 600 $DIRECTORY/{{ kb_ssl_config['dns'] }}.key && chown kibana:kibana $DIRECTORY/{{ kb_ssl_config['dns'] }}.key
+echo $KIBANA_PUB_CRT | sed 's/\\n/\'$'\n''/g' > $DIRECTORY/{{ kb_ssl_config['dns'] }}.crt && chmod 644 $DIRECTORY/{{ kb_ssl_config['dns'] }}.crt && chown kibana:kibana $DIRECTORY/{{ kb_ssl_config['dns'] }}.crt
