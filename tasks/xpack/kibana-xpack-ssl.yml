@@ -22,7 +22,7 @@
     dest: "{{kb_conf_dir}}"
     owner: kibana
   become: yes
-  when: kb_es_ssl_config is defined and (not kb_ssl_cert_present.stat.exists or kb_es_ssl_config['regen_certs']) and not kb_ssl_config['conjur_enabled']
+  when: kb_es_ssl_config is defined and (not kb_ssl_cert_present.stat.exists or kb_es_ssl_config['regen_certs'])
   register: kb_es_ssl_extracted_certs # << not working?
 
 #When rekey is enabled remove ssl folder << Test rekey!
