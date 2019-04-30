@@ -1,6 +1,6 @@
 ---
-kb_major_version: "6.x"
-kb_version: "6.2.3"
+kb_major_version: "7.x"
+kb_version: "7.0.0"
 kb_version_lock: false
 kb_use_repository: true
 kb_templatkb_fileglob: "files/templates/*.json"
