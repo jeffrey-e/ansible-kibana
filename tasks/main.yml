@@ -38,7 +38,7 @@
 #       - xpack
 
 - name: Generate SSL/TLS environment
-  include: ./kibana-xpack-ssl.yml
+  include: xpack/kibana-xpack-ssl.yml
 
 - name: flush handlers
   meta: flush_handlers
