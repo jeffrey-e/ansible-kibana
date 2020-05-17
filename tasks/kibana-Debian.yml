@@ -35,8 +35,8 @@
   when: kb_use_repository
   register: debian_kibana_install_from_repo
   notify: restart kibana
-  tag: 
-    - no_es_apt
+  tags: 
+    - no_apt
     - always
 
 - name: Debian - Include versionlock
