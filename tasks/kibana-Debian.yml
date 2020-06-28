@@ -18,7 +18,6 @@
   when: kb_use_repository and kb_apt_key
   tags: 
     - no_apt
-    - always
 
 - name: Debian - Add kibana repository
   become: yes
@@ -29,7 +28,6 @@
   when: kb_use_repository
   tags: 
     - no_apt
-    - always
 
 - name: Debian - Remove version lock when upgrading
   include: kibana-Debian-version-unlock.yml
@@ -43,7 +41,6 @@
   notify: restart kibana
   tags: 
     - no_apt
-    - always
 
 - name: Debian - Include versionlock
   include: kibana-Debian-version-lock.yml
